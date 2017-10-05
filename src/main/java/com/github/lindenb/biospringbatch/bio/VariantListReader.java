@@ -30,12 +30,13 @@ public class VariantListReader 	implements
 	
 
 	@Override
-	public void open(final ExecutionContext arg0) throws ItemStreamException {
+	public void open(final ExecutionContext ctx) throws ItemStreamException {
 		try {
 			this.vcfFileReader = new VCFFileReader(
 					Objects.requireNonNull(this.resource).getFile(),
 					false
 					);
+			ctx.put("header",this.vcfFileReader.getFileHeader());
 			this.iter = this.vcfFileReader.iterator();
 			}
 		catch(IOException err) {

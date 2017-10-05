@@ -23,6 +23,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 
 public class VariantListWriter 	implements 
 	ItemStreamWriter<List<VariantContext>>,
@@ -36,8 +37,13 @@ public class VariantListWriter 	implements
 	public void open(final ExecutionContext arg0) throws ItemStreamException {
 		try {
 			final VariantContextWriterBuilder vcwb = new VariantContextWriterBuilder();
+			vcwb.clearOptions();
+			vcwb.setIndexCreator(null);
+			vcwb.setCreateMD5(false);
+			
 			vcwb.setOutputFile(Objects.requireNonNull(this.resource).getFile());
 			this.vcfFileWriter =vcwb.build();
+			this.vcfFileWriter.writeHeader((VCFHeader)arg0.get("header"));
 			}
 		catch(IOException err) {
 			throw new ItemStreamException(err);
