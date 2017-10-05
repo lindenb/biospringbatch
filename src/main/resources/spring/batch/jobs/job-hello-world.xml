@@ -34,48 +34,15 @@
 
 	<bean id="itemProcessor" class="com.github.lindenb.springbatch.Test01$CustomItemProcessor" />
 
-	<bean id="cvsFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+	<bean id="cvsFileItemReader"
+		class="com.github.lindenb.biospringbatch.bio.VariantListReader"
+		>
 
-		<property name="resource" value="file:/home/lindenb/jeter.csv" />
+		<property name="resource" value="file:/home/lindenb/src/gatk-ui/testdata/mutations.vcf" />
 
-		<property name="lineMapper">
-		    <bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
-			
-			<property name="lineTokenizer">
-				<bean
-					class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
-					<property name="delimiter" value="," />
-				</bean>
-			</property>
-			
-			<property name="fieldSetMapper">
-				<bean class="com.github.lindenb.springbatch.Test01$ReportFieldSetMapper" />
-
-				 <!-- if no data type conversion, use BeanWrapperFieldSetMapper to map by name
-				<bean
-					class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
-					<property name="prototypeBeanName" value="report" />
-				</bean>
-				 -->
-			</property>
-		    </bean>
-		</property>
 	</bean>
 
-	<bean id="xItemWriter" class="org.springframework.batch.item.file.FlatFileItemWriter">
-		<property name="resource" value="file:jeter.csv" />
-		<property name="appendAllowed" value="false" />
-		<property name="lineAggregator">
-			<bean
-				class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
-				<property name="delimiter" value="," />
-				<property name="fieldExtractor">
-					<bean
-						class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
-						<property name="names" value="path" />
-					</bean>
-				</property>
-			</bean>
-</property>
+	<bean id="xItemWriter" class="com.github.lindenb.biospringbatch.bio.VariantListWriter">
+		<property name="resource" value="file:jeter.vcf" />
 	</bean>
 </beans>

@@ -2,9 +2,14 @@ package com.github.lindenb.springbatch;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
+
 import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.validation.BindException;
+
+import htsjdk.variant.variantcontext.VariantContext;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -12,6 +17,9 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.batch.item.ItemProcessor;
+
+
+
 import java.net.*;
 public class Test01
 	{
@@ -30,13 +38,13 @@ public class Test01
 	}
 
 }
-	public static class CustomItemProcessor implements ItemProcessor<URL, URL>
+	public static class CustomItemProcessor implements ItemProcessor<List<VariantContext>, List<VariantContext>>
 		{
 		@Override
-		public URL process(URL item) throws Exception {
+		public List<VariantContext> process(List<VariantContext> L) throws Exception {
 
-			System.err.println("Processing..." + item);
-			return item;
+			System.err.println("Processing..." + L);
+			return L;
 			}
 		}
 	
