@@ -23,10 +23,13 @@
 	</bean>
 	
 	<batch:job id="helloWorldJob">
-	  <batch:step id="step1">
+	    <batch:step id="step1">
+	    
+	    
 		<batch:tasklet>
-			<batch:chunk reader="cvsFileItemReader" writer="xItemWriter"
-                              processor="itemProcessor" commit-interval="10">
+			<batch:chunk reader="cvsFileItemReader" writer="xItemWriter1"
+                              processor="itemProcessor"
+                              commit-interval="10">
 			</batch:chunk>
 		</batch:tasklet>
 	  </batch:step>
@@ -42,7 +45,10 @@
 
 	</bean>
 
-	<bean id="xItemWriter" class="com.github.lindenb.biospringbatch.bio.VariantListWriter">
-		<property name="resource" value="file:jeter.vcf" />
+	<bean id="xItemWriter1" class="com.github.lindenb.biospringbatch.bio.VariantListWriter">
+		<property name="resource" value="file:jeter1.vcf" />
+	</bean>
+	<bean id="xItemWriter2" class="com.github.lindenb.biospringbatch.bio.VariantListWriter">
+		<property name="resource" value="file:jeter2.vcf" />
 	</bean>
 </beans>

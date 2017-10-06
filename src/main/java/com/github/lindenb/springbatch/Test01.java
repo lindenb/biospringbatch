@@ -90,7 +90,7 @@ public class Test01
 			"spring/batch/jobs/job-hello-world.xml"
 		};
 
-	ApplicationContext context =
+	ClassPathXmlApplicationContext context =
 			new ClassPathXmlApplicationContext(springConfig);
 
 	JobLauncher jobLauncher = (JobLauncher) context.getBean("jobLauncher");
@@ -104,7 +104,7 @@ public class Test01
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
-
+	context.close();
 	System.out.println("Done");
 
   }

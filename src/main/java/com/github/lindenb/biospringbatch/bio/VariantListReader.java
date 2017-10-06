@@ -7,6 +7,11 @@ import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.batch.core.StepListener;
+import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamReader;
@@ -17,43 +22,88 @@ import org.springframework.batch.item.file.ResourceAwareItemReaderItemStream;
 import org.springframework.core.io.Resource;
 
 import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.CloserUtil;
+import htsjdk.samtools.util.Interval;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 
 public class VariantListReader 	implements 
 	ItemStreamReader<List<VariantContext>>,
-	ResourceAwareItemReaderItemStream<List<VariantContext>>{
-	private static final Log logger = LogFactory.getLog(VariantListReader.class);	
+	ResourceAwareItemReaderItemStream<List<VariantContext>>,
+	StepExecutionListener
+	{
+	private static final Log LOG = LogFactory.getLog(VariantListReader.class);	
 	private Resource resource = null;
 	private VCFFileReader vcfFileReader = null;
 	private CloseableIterator<VariantContext> iter=null;
-	
+	private Interval interval = null;
+	private StepExecution stepExecution = null;
 
+	@Override
+	public void beforeStep(final StepExecution stepExecution) {
+		this.stepExecution = stepExecution;
+		}
+	@Override
+	public ExitStatus afterStep(StepExecution stepExecution) {
+		return stepExecution.getExitStatus();
+		}
+	
+	
 	@Override
 	public void open(final ExecutionContext ctx) throws ItemStreamException {
 		try {
 			this.vcfFileReader = new VCFFileReader(
-					Objects.requireNonNull(this.resource).getFile(),
-					false
+					Objects.requireNonNull(this.getResource()).getFile(),
+					getInterval()!=null
 					);
-			ctx.put("header",this.vcfFileReader.getFileHeader());
-			this.iter = this.vcfFileReader.iterator();
+			Objects.requireNonNull(this.stepExecution).
+				getExecutionContext().
+				put("header",this.vcfFileReader.getFileHeader());
+			if(this.getInterval()==null)
+				{
+				this.iter = this.vcfFileReader.iterator();
+				}
+			else
+				{
+				final Interval seg = this.getInterval();
+				this.iter = this.vcfFileReader.query(
+					seg.getContig(),
+					seg.getStart(),
+					seg.getEnd()
+					);
+				}
 			}
-		catch(IOException err) {
+		catch(final IOException err) {
+			LOG.warn("Cannot open", err);
+			stop();
 			throw new ItemStreamException(err);
 			}
 		
 	}
+	
+	public void setInterval(final Interval interval) {
+		this.interval = interval;
+		}
+	
+	public Interval getInterval() {
+		return interval;
+		}
 
+	private void stop() {
+		CloserUtil.close(this.iter);
+		CloserUtil.close(this.vcfFileReader);
+		this.iter = null;
+		this.vcfFileReader = null;
+		}
+	
 	@Override
 	public void close() throws ItemStreamException {
-		if(this.iter!=null) this.iter.close();
-		if(this.vcfFileReader!=null) this.vcfFileReader.close();
+		stop();
 	}
 
 	@Override
-	public void update(ExecutionContext arg0) throws ItemStreamException {
-		logger.debug("update");
+	public void update(final ExecutionContext ctx) throws ItemStreamException {
+		LOG.warn("################updating "+ctx);
 	}
 
 	@Override
@@ -67,8 +117,9 @@ public class VariantListReader 	implements
 	@Override
 	public void setResource(final Resource rsrc) {
 		this.resource = rsrc;
-		
-	}
+		}
 
-
+	public Resource getResource() {
+		return this.resource;
+		}
 }
